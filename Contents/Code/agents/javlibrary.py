@@ -3,6 +3,7 @@
 import datetime
 from difflib import SequenceMatcher
 import re
+import logging
 
 from bs4 import BeautifulSoup
 import requests
@@ -23,7 +24,7 @@ class JAVLibrary(LibraryAgent):
     def query(self, keyword):
         keyword = keyword.upper()
         results = []
-        url = "https://www.javlibrary.com/ja/vl_searchbyid.php"
+        url = "https://www.javlibrary.com/en/vl_searchbyid.php"
         params = {
             "keyword": keyword
         }
@@ -47,7 +48,7 @@ class JAVLibrary(LibraryAgent):
             try:
                 agent_id = soup.find("h3", "post-title").find("a")["href"][7:]
             except AttributeError:
-                Log("an exception occurred: " + url)
+                logging.error("an exception occurred: " + url)
                 return
             results.append(self.make_result(
                 agent_id,
@@ -80,7 +81,7 @@ class JAVLibrary(LibraryAgent):
         }
 
     def get_studio(self, data):
-        ele = self.find_ele(data, "メーカー:")
+        ele = self.find_ele(data, "Maker:")
         if ele:
             return ele.find("a").text.strip()
 
@@ -88,7 +89,7 @@ class JAVLibrary(LibraryAgent):
         return data.find("div", {"id": "video_title"}).find("a").text.strip()
 
     def get_originally_available_at(self, data):
-        ele = self.find_ele(data, "発売日:")
+        ele = self.find_ele(data, "Release Date:")
         if ele:
             dt_str = ele.text.strip()
             match = re.search("\d+[-]\d+[-]\d+", dt_str)
@@ -99,7 +100,7 @@ class JAVLibrary(LibraryAgent):
                 pass
 
     def get_roles(self, data):
-        ele = self.find_ele(data, "出演者:")
+        ele = self.find_ele(data, "Cast:")
         if ele:
             return [
                 {"name": list(filter(None, item.text.strip().split(" ")))[0]}
@@ -108,26 +109,26 @@ class JAVLibrary(LibraryAgent):
         return []
 
     def get_duration(self, data):
-        ele = self.find_ele(data, "収録時間:")
+        ele = self.find_ele(data, "Length:")
         if ele:
             match = re.search("\d+", ele.find("span", "text").text)
             if match:
                 return int(match.group(0))*60*1000
 
     def get_directors(self, data):
-        ele = self.find_ele(data, "監督:")
+        ele = self.find_ele(data, "Director:")
         if ele and ele.find("a"):
             return [{"name": ele.find("a").text.strip()}]
         return []
 
     def get_genres(self, data):
-        ele = self.find_ele(data, "ジャンル:")
+        ele = self.find_ele(data, "Genre(s):")
         if ele:
             return [ele.text.strip() for ele in ele.findAll("a")]
         return []
 
     def get_rating(self, data):
-        ele = self.find_ele(data, "平均評価:")
+        ele = self.find_ele(data, "User Rating:")
         if ele:
             try:
                 return float(ele.find("span", "score").text.strip("()"))
@@ -151,7 +152,7 @@ class JAVLibrary(LibraryAgent):
             return [src]
 
     def crawl(self, agent_id):
-        url = "https://www.javlibrary.com/ja/"
+        url = "https://www.javlibrary.com/en/"
         resp = self.session.get(url, params={
             "v": agent_id
         })
