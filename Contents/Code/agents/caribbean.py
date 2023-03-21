@@ -78,17 +78,17 @@ class Caribbean(StudioAgent, QueryAgent):
         )
 
     def get_studio(self):
-        return "カリビアンコム"
+        return "caribbeancom"
 
     def get_collections(self, data):
         rv = [self.get_studio()]
-        ele = self.find_ele(data, "シリーズ")
+        ele = self.find_ele(data, "series")
         if ele:
             rv.append(ele.find("a").text.strip())
         return rv
 
     def get_originally_available_at(self, data):
-        ele = self.find_ele(data, "配信日")
+        ele = self.find_ele(data, "Release Date:")
         if ele:
             dt_str = ele.text.strip()
             return datetime.datetime.strptime(dt_str, "%Y/%m/%d")
@@ -101,7 +101,7 @@ class Caribbean(StudioAgent, QueryAgent):
             return int(diff.total_seconds())*1000
 
     def get_roles(self, data):
-        ele = self.find_ele(data, "出演")
+        ele = self.find_ele(data, "Starring:")
         if ele:
             return [
                 {"name": item.find(
@@ -111,7 +111,7 @@ class Caribbean(StudioAgent, QueryAgent):
         return []
 
     def get_genres(self, data):
-        ele = self.find_ele(data, "タグ")
+        ele = self.find_ele(data, "Tags:")
         if ele:
             return [
                 item.text.strip()
@@ -130,23 +130,23 @@ class Caribbean(StudioAgent, QueryAgent):
 
     def get_thumbs(self, movie_id):
         return [
-            "https://www.caribbeancom.com/moviepages/{0}/images/l_l.jpg".format(
+            "https://caribbeancom.com/moviepages/{0}/images/l_l.jpg".format(
                 movie_id)
         ]
 
     def get_posters(self, movie_id):
         urls = self.get_thumbs(movie_id) + [
-            "https://www.caribbeancom.com/moviepages/{0}/images/jacket.jpg".format(
+            "https://caribbeancom.com/moviepages/{0}/images/jacket.jpg".format(
                 movie_id)
         ]
         return [url for url in urls if requests.head(url).status_code != 404]
 
     def crawl(self, movie_id):
-        url = "https://www.caribbeancom.com/moviepages/{0}/index.html".format(
+        url = "https://en.caribbeancom.com/eng/moviepages/{0}/index.html".format(
             movie_id)
         resp = requests.get(url)
         resp.raise_for_status()
-        html = resp.content.decode("euc-jp", errors="ignore")
+        html = resp.content.decode("utf-8", errors="ignore")        
         return BeautifulSoup(html, "html.parser")
 
     def find_ele(self, data, title):

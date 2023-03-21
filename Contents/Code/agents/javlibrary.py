@@ -103,7 +103,8 @@ class JAVLibrary(LibraryAgent):
         ele = self.find_ele(data, "Cast:")
         if ele:
             return [
-                {"name": list(filter(None, item.text.strip().split(" ")))[0]}
+                # {"name": list(filter(None, item.text.strip().split(" ")))[0]}
+                {"name": list(filter(None, item.text.strip().split(" ")))[1] + " " + list(filter(None, item.text.strip().split(" ")))[0]}
                 for item in ele.findAll("a")
             ]
         return []
