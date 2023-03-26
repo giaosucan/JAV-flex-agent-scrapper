@@ -129,7 +129,7 @@ class Heyzo(StudioAgent, QueryAgent):
         ]
 
     def crawl(self, movie_id):
-        url = "https://www.heyzo.com/moviepages/{0}/index.html".format(
+        url = "https://www.en.heyzo.com/moviepages/{0}/index.html".format(
             movie_id)
         resp = requests.get(url)
         resp.raise_for_status()
